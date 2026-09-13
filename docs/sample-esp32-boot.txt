@@ -1,0 +1,9 @@
+# ESP32 boot log — Bed A moisture probe
+# MAC AA:7C:3F:10:00:01
+rst:0x1 (POWERON_RESET),boot:0x13
+configsip: 0, SPIWP:0xee
+mode:DIO, clock div:2
+Smart-X firmware 1.4.2
+wifi: connected Stellenbosch-Mesh
+mqtt: pub soil_moisture interval=2000ms
+ok
