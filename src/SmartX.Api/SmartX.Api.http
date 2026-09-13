@@ -1,0 +1,34 @@
+@http://localhost:5266
+
+GET {{Host}}/health
+
+###
+GET {{Host}}/api/pillars
+
+###
+GET {{Host}}/api/telemetry/snapshot
+
+###
+POST {{Host}}/api/telemetry/ingest
+Content-Type: application/json
+
+{
+  "deviceId": "AA:7C:3F:10:00:01",
+  "metric": "soil_moisture",
+  "valueKind": "Float",
+  "numericValue": 91.4,
+  "unit": "%"
+}
+
+###
+POST {{Host}}/api/meters/aggregate
+Content-Type: application/json
+
+{
+  "leftId": "Meter1",
+  "leftWatts": 2400,
+  "leftPf": 0.96,
+  "rightId": "Meter2",
+  "rightWatts": 1850,
+  "rightPf": 0.91
+}
