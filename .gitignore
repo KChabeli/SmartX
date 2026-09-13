@@ -1,0 +1,14 @@
+﻿# Smart-X
+bin/
+obj/
+node_modules/
+dist/
+.vs/
+*.user
+*.suo
+App_Data/
+uploads/
+.env
+.env.local
+*.log
+.DS_Store
