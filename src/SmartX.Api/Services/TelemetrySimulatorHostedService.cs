@@ -93,6 +93,6 @@ public sealed class TelemetrySimulatorHostedService(
             _silenced.Add(mac);
         }
 
-        logger.LogInformation("Disconnect drill silencing {Macs}", string.Join(", ", _silenced));
+        logger.LogDebug("Disconnect drill silencing {Macs}", string.Join(", ", _silenced));
     }
 }

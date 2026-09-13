@@ -51,4 +51,12 @@ app.MapGatewayEndpoints();
 app.MapHub<TelemetryHub>("/hubs/telemetry");
 app.MapGet("/health", () => Results.Ok(new { status = "ok", nodes = store.Sensors.Count }));
 
+app.Lifetime.ApplicationStarted.Register(() =>
+{
+    var log = app.Logger;
+    log.LogInformation("Smart-X API is running and waiting for requests — this window is supposed to stay open.");
+    log.LogInformation("Dashboard: cd client && npm run dev  →  http://localhost:5173");
+    log.LogInformation("Health check: {Health}", "http://localhost:5266/health");
+});
+
 app.Run();
