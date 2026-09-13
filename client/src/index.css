@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+:root {
+  font-family: "IBM Plex Sans", system-ui, sans-serif;
+  color: #e8eef7;
+  background: #07111c;
+}
+
+* { box-sizing: border-box; }
+html, body, #root { min-height: 100%; margin: 0; }
+body {
+  background:
+    radial-gradient(1200px 600px at 10% -10%, rgba(34, 197, 94, 0.08), transparent 50%),
+    radial-gradient(900px 500px at 110% 0%, rgba(14, 165, 233, 0.12), transparent 45%),
+    #07111c;
+}
+
+.mono { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+
+@keyframes halo-pulse {
+  0%, 100% { opacity: 0.45; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.06); }
+}
+@keyframes halo-shock {
+  0% { opacity: 0.8; transform: scale(0.85); }
+  100% { opacity: 0; transform: scale(1.45); }
+}
+@keyframes orbit {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: 80; }
+}
+
+.halo-nominal { animation: halo-pulse 2.8s ease-in-out infinite; }
+.halo-warning { animation: halo-pulse 1.4s ease-in-out infinite; }
+.halo-critical { animation: halo-shock 1.1s ease-out infinite; }
+.halo-disconnected { animation: orbit 6s linear infinite; }
