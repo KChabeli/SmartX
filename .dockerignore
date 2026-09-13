@@ -1,0 +1,9 @@
+.git
+**/bin
+**/obj
+**/node_modules
+**/dist
+**/.vs
+App_Data
+uploads
+*.user
