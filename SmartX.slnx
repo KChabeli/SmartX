@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SmartX.Api/SmartX.Api.csproj" />
+    <Project Path="src/SmartX.Domain/SmartX.Domain.csproj" />
+  </Folder>
+</Solution>
