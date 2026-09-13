@@ -79,9 +79,9 @@ docker compose up --build
 
 ## GitHub
 
-Push this folder to GitHub after creating the remote:
+Repository: https://github.com/KChabeli/SmartX
 
 ```powershell
-git remote add origin https://github.com/<your-account>/SmartX.git
+git remote add origin https://github.com/KChabeli/SmartX.git
 git push -u origin main
 ```
