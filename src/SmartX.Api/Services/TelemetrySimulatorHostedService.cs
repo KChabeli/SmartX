@@ -1,3 +1,4 @@
+using SmartX.Api.Contracts;
 using SmartX.Domain.Telemetry;
 
 namespace SmartX.Api.Services;
@@ -49,39 +50,15 @@ public sealed class TelemetrySimulatorHostedService(
 
     private void Publish(Domain.Sensors.SensorProfile sensor)
     {
-        switch (sensor.ValueKind)
-        {
-            case TelemetryValueKind.Float:
-                ingest.IngestFloat(new TelemetryPacket<float>
-                {
-                    DeviceId = sensor.MacAddress,
-                    Metric = sensor.Metric,
-                    Payload = (float)MeshSeeder.SampleNumeric(sensor, _tick + 400),
-                    Unit = sensor.Unit,
-                    Sequence = _tick
-                });
-                break;
-            case TelemetryValueKind.Integer:
-                ingest.IngestInt(new TelemetryPacket<int>
-                {
-                    DeviceId = sensor.MacAddress,
-                    Metric = sensor.Metric,
-                    Payload = (int)Math.Round(MeshSeeder.SampleNumeric(sensor, _tick + 400)),
-                    Unit = sensor.Unit,
-                    Sequence = _tick
-                });
-                break;
-            default:
-                ingest.IngestBool(new TelemetryPacket<bool>
-                {
-                    DeviceId = sensor.MacAddress,
-                    Metric = sensor.Metric,
-                    Payload = MeshSeeder.SampleBool(sensor, _tick + 400),
-                    Unit = sensor.Unit,
-                    Sequence = _tick
-                });
-                break;
-        }
+        var numeric = MeshSeeder.SampleNumeric(sensor, _tick + 400);
+        ingest.Ingest(new TelemetryIngestRequest(
+            sensor.MacAddress,
+            sensor.Metric,
+            sensor.ValueKind,
+            sensor.ValueKind == TelemetryValueKind.Boolean ? null : numeric,
+            sensor.ValueKind == TelemetryValueKind.Boolean ? MeshSeeder.SampleBool(sensor, _tick + 400) : null,
+            sensor.Unit,
+            _tick));
     }
 
     private void ToggleSilence()

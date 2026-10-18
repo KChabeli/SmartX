@@ -2,12 +2,13 @@ using Microsoft.AspNetCore.SignalR;
 using SmartX.Api.Contracts;
 using SmartX.Api.Hubs;
 using SmartX.Domain.Alerting;
+using SmartX.Domain.Processing;
 using SmartX.Domain.Sensors;
 using SmartX.Domain.Telemetry;
 
 namespace SmartX.Api.Services;
 
-public sealed class TelemetryIngestService(GatewayStore store, IHubContext<TelemetryHub> hub)
+public sealed class TelemetryIngestService(GatewayStore store, IHubContext<TelemetryHub> hub, RealtimeMeshEngine engine)
 {
     public TelemetrySampleDto IngestFloat(TelemetryPacket<float> packet)
     {
@@ -47,45 +48,55 @@ public sealed class TelemetryIngestService(GatewayStore store, IHubContext<Telem
 
     public TelemetrySampleDto Ingest(TelemetryIngestRequest request)
     {
-        if (!store.Sensors.TryGetValue(request.DeviceId, out var sensor)
-            && !store.Sensors.Values.Any(s => s.MacAddress.Equals(request.DeviceId, StringComparison.OrdinalIgnoreCase)))
+        if (!engine.TryGetDevice(request.DeviceId, out var live)
+            && !store.Sensors.TryGetValue(request.DeviceId, out _))
         {
             throw new InvalidOperationException($"Unknown device '{request.DeviceId}'. Register the sensor first.");
         }
 
-        sensor ??= store.Sensors.Values.First(s => s.MacAddress.Equals(request.DeviceId, StringComparison.OrdinalIgnoreCase));
-        var deviceId = sensor.MacAddress;
-        var metric = string.IsNullOrWhiteSpace(request.Metric) ? sensor.Metric : request.Metric;
-        var unit = request.Unit ?? sensor.Unit;
-        var sequence = request.Sequence ?? Environment.TickCount;
+        var sensor = live?.Profile ?? store.Sensors[request.DeviceId];
+        engine.Enqueue(request, sensor);
 
-        return request.ValueKind switch
+        TelemetrySampleDto? last = null;
+        while (engine.TryDequeueNext(out var envelope))
+        {
+            last = CommitEnvelope(envelope);
+        }
+
+        engine.RefreshDisconnects(DateTimeOffset.UtcNow);
+        _ = engine.BroadcastQueuesAsync();
+        return last ?? throw new InvalidOperationException("Telemetry queue drained empty.");
+    }
+
+    public TelemetrySampleDto CommitEnvelope(QueuedTelemetry envelope)
+    {
+        return envelope.ValueKind switch
         {
             TelemetryValueKind.Float => IngestFloat(new TelemetryPacket<float>
             {
-                DeviceId = deviceId,
-                Metric = metric,
-                Payload = (float)(request.NumericValue ?? 0),
-                Unit = unit,
-                Sequence = sequence
+                DeviceId = envelope.DeviceId,
+                Metric = envelope.Metric,
+                Payload = (float)(envelope.NumericValue ?? 0),
+                Unit = envelope.Unit,
+                Sequence = envelope.Sequence
             }),
             TelemetryValueKind.Integer => IngestInt(new TelemetryPacket<int>
             {
-                DeviceId = deviceId,
-                Metric = metric,
-                Payload = (int)Math.Round(request.NumericValue ?? 0),
-                Unit = unit,
-                Sequence = sequence
+                DeviceId = envelope.DeviceId,
+                Metric = envelope.Metric,
+                Payload = (int)Math.Round(envelope.NumericValue ?? 0),
+                Unit = envelope.Unit,
+                Sequence = envelope.Sequence
             }),
             TelemetryValueKind.Boolean => IngestBool(new TelemetryPacket<bool>
             {
-                DeviceId = deviceId,
-                Metric = metric,
-                Payload = request.BooleanValue ?? ((request.NumericValue ?? 0) > 0),
-                Unit = unit,
-                Sequence = sequence
+                DeviceId = envelope.DeviceId,
+                Metric = envelope.Metric,
+                Payload = envelope.BooleanValue ?? ((envelope.NumericValue ?? 0) > 0),
+                Unit = envelope.Unit,
+                Sequence = envelope.Sequence
             }),
-            _ => throw new ArgumentOutOfRangeException(nameof(request.ValueKind))
+            _ => throw new ArgumentOutOfRangeException(nameof(envelope.ValueKind))
         };
     }
 
@@ -143,6 +154,7 @@ public sealed class TelemetryIngestService(GatewayStore store, IHubContext<Telem
         store.LastSeen[deviceId] = timestamp;
         var sample = Project(deviceId, packetId, metric, unit, kind, numeric, boolean, timestamp, sequence, DateTimeOffset.UtcNow);
         store.LatestSeverity[deviceId] = sample.Severity;
+        engine.ObserveCommitted(sample);
         _ = hub.Clients.All.SendAsync("telemetry", sample);
         if (sample.Severity is AlertSeverity.Critical or AlertSeverity.Disconnected)
         {

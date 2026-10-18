@@ -7,12 +7,15 @@ namespace SmartX.Api.Services;
 
 public static class MeshSeeder
 {
-    public static void Seed(GatewayStore store, TelemetryIngestService ingest)
+    public static void Seed(GatewayStore store, TelemetryIngestService ingest, RealtimeMeshEngine engine)
     {
         foreach (var sensor in BuildCatalogue())
         {
             store.Sensors[sensor.MacAddress] = sensor;
+            engine.RegisterDevice(sensor);
         }
+
+        engine.SeedAssociationPriors();
 
         const int windows = 8;
         const int windowSize = 30;
@@ -32,6 +35,7 @@ public static class MeshSeeder
         Env("AA:7C:3F:10:00:05", "Reservoir pH", "Stellenbosch Hydroponics / Zone 2 / Sub-Zone A", "ph", "pH", 5.6, 6.6, 4.8, 7.4),
         Act("AA:7C:3F:10:00:06", "Irrigation valve A1", "Stellenbosch Hydroponics / Zone 1 / Sub-Zone B", "valve_open"),
         Act("AA:7C:3F:10:00:07", "Fogger relay", "Stellenbosch Hydroponics / Zone 2 / Sub-Zone A", "relay_on"),
+        Act("AA:7C:3F:10:00:08", "Pump A — Bed A feed", "Stellenbosch Hydroponics / Zone 1 / Sub-Zone B", "pump_on"),
         Pwr("AA:7C:3F:20:00:11", "Pump stack kWh meter", "Stellenbosch Hydroponics / Zone 2 / Sub-Zone A", 400, 1800, 50, 3200),
         Env("BB:91:44:20:10:01", "Unit 12B — Occupancy temp", "Sandton Estate / Tower A / Floor 12", "temperature", "°C", 19, 24, 14, 30),
         Env("BB:91:44:20:10:02", "Unit 12B — Humidity", "Sandton Estate / Tower A / Floor 12", "humidity", "%", 35, 60, 20, 80),
