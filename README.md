@@ -49,7 +49,7 @@ Open `http://localhost:5173`. You are gated on `/login`.
 - The value is looked up in the live `Dictionary<MAC, device>`. A registered example: `AA:7C:3F:10:00:01`.
 
 ```powershell
-curl.exe -X POST http://localhost:5266/api/auth/login -H "Content-Type: application/json" --data-binary "{\"macAddress\":\"AA:7C:3F:10:00:01\"}"
+curl.exe -X POST http://localhost:5266/api/auth/login -H "Content-Type: application/json" --data-binary '{"macAddress":"AA:7C:3F:10:00:01"}'
 ```
 
 Command overrides require `Authorization: Bearer <token>`. ESP32 ingest stays open so devices can still POST telemetry with only a present `deviceId`.

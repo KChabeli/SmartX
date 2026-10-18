@@ -17,7 +17,7 @@ public static class AuthEndpoints
             }
             catch (ArgumentException ex)
             {
-                return Results.BadRequest(ex.Message);
+                return Results.BadRequest(new { message = ex.Message });
             }
             catch (UnauthorizedAccessException ex)
             {

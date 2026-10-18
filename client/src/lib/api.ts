@@ -19,7 +19,15 @@ async function json<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${api}${path}`, { ...init, headers })
   if (!response.ok) {
     const text = await response.text()
-    throw new Error(text || response.statusText)
+    try {
+      const parsed = JSON.parse(text) as { message?: string }
+      throw new Error(parsed.message || text || response.statusText)
+    } catch (err) {
+      if (err instanceof SyntaxError) {
+        throw new Error(text || response.statusText)
+      }
+      throw err
+    }
   }
   if (response.status === 204) {
     return undefined as T
