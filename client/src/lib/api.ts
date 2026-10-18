@@ -3,15 +3,37 @@ import type { CommandDto, DeploymentNodeDto, InsightDto, PillarDto, RealtimeDiag
 const api = import.meta.env.VITE_API_URL ?? ''
 
 async function json<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${api}${path}`, init)
+  const headers = new Headers(init?.headers)
+  const raw = sessionStorage.getItem('smartx-session')
+  if (raw) {
+    try {
+      const session = JSON.parse(raw) as { token?: string }
+      if (session.token) headers.set('Authorization', `Bearer ${session.token}`)
+    } catch {
+      /* ignore broken session */
+    }
+  }
+  if (init?.body && !(init.body instanceof FormData) && !headers.has('Content-Type')) {
+    headers.set('Content-Type', 'application/json')
+  }
+  const response = await fetch(`${api}${path}`, { ...init, headers })
   if (!response.ok) {
     const text = await response.text()
     throw new Error(text || response.statusText)
+  }
+  if (response.status === 204) {
+    return undefined as T
   }
   return response.json() as Promise<T>
 }
 
 export const gatewayApi = {
+  login: (macAddress: string) =>
+    json<{ token: string; macAddress: string; displayName: string }>('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ macAddress }),
+    }),
+  logout: () => json<void>('/api/auth/logout', { method: 'POST' }),
   pillars: () => json<PillarDto[]>('/api/pillars'),
   snapshot: () => json<SensorLiveDto[]>('/api/telemetry/snapshot'),
   history: (deviceId: string) => json<TelemetrySampleDto[]>(`/api/telemetry?deviceId=${encodeURIComponent(deviceId)}&take=180`),

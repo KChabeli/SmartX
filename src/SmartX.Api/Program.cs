@@ -32,6 +32,7 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddSingleton<GatewayStore>();
 builder.Services.AddSingleton<AttachmentStorage>();
+builder.Services.AddSingleton<AuthService>();
 builder.Services.AddSingleton<RealtimeMeshEngine>();
 builder.Services.AddSingleton<TelemetryIngestService>();
 builder.Services.AddHostedService<TelemetrySimulatorHostedService>();
@@ -49,6 +50,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+app.MapAuthEndpoints();
 app.MapGatewayEndpoints();
 app.MapCommandEndpoints();
 app.MapHub<TelemetryHub>("/hubs/telemetry");

@@ -39,7 +39,7 @@ export function CommandStreamPage() {
     })
   }, [nodes, query, category, severity])
 
-  const selected = visible.find((n) => n.sensor.macAddress === selectedMac) ?? visible[0] ?? null
+  const selected = visible.find((n) => n.sensor.macAddress === selectedMac) ?? visible[0]
 
   const issue = async (mac: string, verb: string, reason: string) => {
     try {
@@ -104,7 +104,7 @@ export function CommandStreamPage() {
         ))}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[1.25fr_0.85fr]">
+      <div className="command-board">
         <div className="space-y-3">
           {visible.map((node) => (
             <DeviceRow

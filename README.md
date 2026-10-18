@@ -40,6 +40,20 @@ npm run dev
 
 Leave the API console open. It is supposed to sit there listening.
 
+## Sign in (MAC presence only)
+
+Open `http://localhost:5173`. You are gated on `/login`.
+
+- Empty MAC → rejected (`MAC address is required`).
+- **No format check** — colons, hex length and case are not validated.
+- The value is looked up in the live `Dictionary<MAC, device>`. A registered example: `AA:7C:3F:10:00:01`.
+
+```powershell
+curl.exe -X POST http://localhost:5266/api/auth/login -H "Content-Type: application/json" --data-binary "{\"macAddress\":\"AA:7C:3F:10:00:01\"}"
+```
+
+Command overrides require `Authorization: Bearer <token>`. ESP32 ingest stays open so devices can still POST telemetry with only a present `deviceId`.
+
 ## What to click
 
 1. **Gateway** — three pillars. Ingestion and Command Stream are active; Mesh is locked for the final PoE.

@@ -44,8 +44,8 @@ export function DashboardPage() {
         ))}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[1.4fr_0.8fr]">
-        <div className="grid gap-3 sm:grid-cols-2">
+      <div className="halo-board">
+        <div className="halo-cards">
           {visible.map((node) => (
             <HaloCard
               key={node.sensor.macAddress}

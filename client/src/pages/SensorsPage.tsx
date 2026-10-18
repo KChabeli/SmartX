@@ -54,7 +54,7 @@ export function SensorsPage() {
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+    <div className="sensor-layout">
       <form onSubmit={onSubmit} className="space-y-3 rounded-2xl border border-white/10 bg-white/5 p-5">
         <h1 className="text-xl font-semibold">Register ESP32 node</h1>
         {Object.entries({

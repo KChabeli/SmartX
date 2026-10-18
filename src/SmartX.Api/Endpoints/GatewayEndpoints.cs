@@ -82,6 +82,11 @@ public static class GatewayEndpoints
         var telemetry = app.MapGroup("/api/telemetry").WithTags("Telemetry");
         telemetry.MapPost("/ingest", (TelemetryIngestRequest request, TelemetryIngestService ingest) =>
         {
+            if (string.IsNullOrWhiteSpace(request.DeviceId))
+            {
+                return Results.BadRequest("MAC address is required.");
+            }
+
             try
             {
                 return Results.Accepted(value: ingest.Ingest(request));
@@ -95,7 +100,7 @@ public static class GatewayEndpoints
         telemetry.MapGet("/", (string? deviceId, int? take, TelemetryIngestService ingest)
             => Results.Ok(ingest.History(deviceId, take ?? 240)));
 
-        telemetry.MapGet("/snapshot", (TelemetryIngestService ingest) => Results.Ok(ingest.Snapshot()));
+        telemetry.MapGet("/snapshot", (TelemetryIngestService ingest) => Results.Ok(ingest.Snapshot())).RequireOperator();
 
         telemetry.MapGet("/heat", (GatewayStore store) =>
         {

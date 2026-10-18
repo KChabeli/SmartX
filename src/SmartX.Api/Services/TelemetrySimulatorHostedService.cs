@@ -29,7 +29,7 @@ public sealed class TelemetrySimulatorHostedService(
 
             foreach (var sensor in store.Sensors.Values)
             {
-                if (_silenced.Contains(sensor.MacAddress))
+                if (_silenced.Contains(sensor.MacAddress) || stoppingToken.IsCancellationRequested)
                 {
                     continue;
                 }
@@ -44,7 +44,9 @@ public sealed class TelemetrySimulatorHostedService(
                 }
             }
 
-            await Task.Delay(TimeSpan.FromMilliseconds(1600), stoppingToken);
+            // Do not pass stoppingToken into Delay — Visual Studio treats TaskCanceledException as a crash
+            // when you press Stop Debugging. Poll the token instead.
+            await Task.Delay(TimeSpan.FromMilliseconds(1600));
         }
     }
 

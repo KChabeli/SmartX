@@ -127,3 +127,7 @@ public sealed record RealtimeDiagnosticsDto(
 public sealed record PriorityBypassDto(string Explanation, IReadOnlyList<string> ProcessingOrder);
 
 public sealed record DeviceSearchRequest(string? Query, string? Category, string? Severity);
+
+public sealed record LoginRequest(string? MacAddress);
+
+public sealed record SessionDto(Guid Token, string MacAddress, string DisplayName, DateTimeOffset IssuedAt);

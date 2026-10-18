@@ -1,7 +1,6 @@
 using SmartX.Api.Contracts;
 using SmartX.Api.Services;
 using SmartX.Domain.Processing;
-using SmartX.Domain.Sensors;
 using SmartX.Domain.Telemetry;
 
 namespace SmartX.Api.Endpoints;
@@ -58,9 +57,20 @@ public static class CommandEndpoints
                 relatedActuators = RealtimeMeshEngine.RelatedActuators,
                 insights = engine.BuildInsights()
             });
-        });
+        }).RequireOperator();
 
         var commands = app.MapGroup("/api/commands").WithTags("Commands");
+        commands.AddEndpointFilter(async (context, next) =>
+        {
+            var auth = context.HttpContext.RequestServices.GetRequiredService<AuthService>();
+            if (!AuthService.TryReadToken(context.HttpContext, out var token) || auth.Find(token) is null)
+            {
+                return Results.Unauthorized();
+            }
+
+            return await next(context);
+        });
+
         commands.MapGet("/", (RealtimeMeshEngine engine)
             => Results.Ok(engine.CommandHistory().Select(RealtimeMeshEngine.ToDto)));
 

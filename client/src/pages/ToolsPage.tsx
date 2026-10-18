@@ -36,7 +36,7 @@ export function ToolsPage() {
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
+    <div className="tools-grid">
       <section className="rounded-2xl border border-white/10 bg-white/5 p-5">
         <h1 className="text-xl font-semibold">Operator overload · smart meters</h1>
         <p className="mt-2 text-sm text-slate-400">

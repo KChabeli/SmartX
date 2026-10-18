@@ -1,6 +1,7 @@
 import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr'
 import { useEffect, useRef, useState } from 'react'
 import { apiBase, gatewayApi } from './api'
+import { readToken } from './auth'
 import type { CommandDto, RealtimeDiagnosticsDto, SensorLiveDto, TelemetrySampleDto } from './types'
 
 export function useTelemetryStream() {
@@ -24,8 +25,9 @@ export function useTelemetryStream() {
       if (!cancelled) setQueues(data)
     }).catch(() => undefined)
 
+    const token = readToken()
     const connection = new HubConnectionBuilder()
-      .withUrl(`${apiBase}/hubs/telemetry`)
+      .withUrl(`${apiBase}/hubs/telemetry?access_token=${encodeURIComponent(token ?? '')}`)
       .withAutomaticReconnect()
       .configureLogging(LogLevel.Warning)
       .build()
