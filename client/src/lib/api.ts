@@ -1,4 +1,4 @@
-import type { DeploymentNodeDto, PillarDto, SensorDto, SensorLiveDto, TelemetrySampleDto } from './types'
+import type { CommandDto, DeploymentNodeDto, InsightDto, PillarDto, RealtimeDiagnosticsDto, SensorDto, SensorLiveDto, TelemetrySampleDto } from './types'
 
 const api = import.meta.env.VITE_API_URL ?? ''
 
@@ -49,6 +49,31 @@ export const gatewayApi = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ root, requiredMac }),
     }),
+  diagnostics: () => json<RealtimeDiagnosticsDto>('/api/realtime/diagnostics'),
+  insights: () => json<InsightDto[]>('/api/realtime/insights'),
+  commandHistory: () => json<CommandDto[]>('/api/commands'),
+  issueCommand: (targetMac: string, verb: string, reason?: string) =>
+    json<{ command: CommandDto; insights: InsightDto[] }>('/api/commands', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ targetMac, verb, reason }),
+    }),
+  undoCommand: () =>
+    json<CommandDto>('/api/commands/undo', { method: 'POST' }),
+  searchDevices: (query: string, category: string, severity: string) =>
+    json<{ matches: SensorLiveDto[]; relatedActuators: Record<string, string>; insights: InsightDto[] }>(
+      '/api/realtime/search',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: query || null,
+          category: category === 'all' ? null : category,
+          severity: severity === 'all' ? null : severity,
+        }),
+      },
+    ),
+  demoPriority: () => json<{ explanation: string; processingOrder: string[] }>('/api/realtime/demo-priority'),
 }
 
 export const apiBase = api

@@ -67,6 +67,47 @@ export type DeploymentNodeDto = {
   children?: DeploymentNodeDto[]
 }
 
+export type CommandDto = {
+  commandId: string
+  targetMac: string
+  targetName: string
+  verb: string
+  previousState: boolean
+  newState: boolean
+  issuedAt: string
+  reason: string
+  wasUndone: boolean
+}
+
+export type InsightDto = {
+  id: string
+  title: string
+  rationale: string
+  confidence: number
+  targetMac: string
+  targetName: string
+  verb: string
+  contextMac: string
+  contextName: string
+  context: string
+}
+
+export type RealtimeDiagnosticsDto = {
+  standardQueueDepth: number
+  priorityQueueDepth: number
+  undoStackDepth: number
+  dictionarySize: number
+  sortedLogCount: number
+  uniqueFaults: number
+  disconnectedNodes: number
+  standardEnqueued: number
+  priorityEnqueued: number
+  standardProcessed: number
+  priorityProcessed: number
+  activeFaults: string[]
+  disconnectedMacs: string[]
+}
+
 export const formatValue = (sample: TelemetrySampleDto | null) => {
   if (!sample) return '—'
   if (sample.valueKind === 'Boolean') return sample.booleanValue ? 'ON' : 'OFF'

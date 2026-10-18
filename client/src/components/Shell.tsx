@@ -3,6 +3,8 @@ import { NavLink, Outlet } from 'react-router-dom'
 const links = [
   { to: '/', label: 'Gateway' },
   { to: '/telemetry', label: 'Telemetry' },
+  { to: '/commands', label: 'Command stream' },
+  { to: '/mesh', label: 'Mesh (locked)' },
   { to: '/sensors', label: 'Sensors' },
   { to: '/tools', label: 'Operators & Tree' },
 ]
@@ -16,10 +18,10 @@ export function Shell() {
             <span className="grid h-9 w-9 place-items-center rounded-lg bg-emerald-400/20 text-emerald-300 mono text-xs">SX</span>
             <div>
               <p className="text-sm font-semibold tracking-wide">SMART-X MESH GATEWAY</p>
-              <p className="text-[11px] text-slate-400">Part 1 · Ingestion &amp; colour-coded telemetry</p>
+              <p className="text-[11px] text-slate-400">Part 2 · Real-time processing &amp; device commands</p>
             </div>
           </NavLink>
-          <nav className="flex gap-1 text-sm">
+          <nav className="flex flex-wrap gap-1 text-sm">
             {links.map((link) => (
               <NavLink
                 key={link.to}

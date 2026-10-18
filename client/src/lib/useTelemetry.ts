@@ -1,11 +1,13 @@
 import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr'
 import { useEffect, useRef, useState } from 'react'
 import { apiBase, gatewayApi } from './api'
-import type { SensorLiveDto, TelemetrySampleDto } from './types'
+import type { CommandDto, RealtimeDiagnosticsDto, SensorLiveDto, TelemetrySampleDto } from './types'
 
 export function useTelemetryStream() {
   const [nodes, setNodes] = useState<SensorLiveDto[]>([])
   const [alerts, setAlerts] = useState<TelemetrySampleDto[]>([])
+  const [commands, setCommands] = useState<CommandDto[]>([])
+  const [queues, setQueues] = useState<RealtimeDiagnosticsDto | null>(null)
   const [connected, setConnected] = useState(false)
   const [packetRate, setPacketRate] = useState(0)
   const hits = useRef(0)
@@ -14,6 +16,12 @@ export function useTelemetryStream() {
     let cancelled = false
     gatewayApi.snapshot().then((data) => {
       if (!cancelled) setNodes(data)
+    }).catch(() => undefined)
+    gatewayApi.commandHistory().then((data) => {
+      if (!cancelled) setCommands(data)
+    }).catch(() => undefined)
+    gatewayApi.diagnostics().then((data) => {
+      if (!cancelled) setQueues(data)
     }).catch(() => undefined)
 
     const connection = new HubConnectionBuilder()
@@ -29,6 +37,12 @@ export function useTelemetryStream() {
     connection.on('alert', (sample: TelemetrySampleDto) => {
       setAlerts((current) => [sample, ...current].slice(0, 12))
     })
+    connection.on('command', (command: CommandDto) => {
+      setCommands((current) => [command, ...current.filter((c) => c.commandId !== command.commandId)].slice(0, 24))
+    })
+    connection.on('queues', (stats: RealtimeDiagnosticsDto) => {
+      setQueues(stats)
+    })
 
     connection.start()
       .then(() => setConnected(true))
@@ -41,6 +55,7 @@ export function useTelemetryStream() {
 
     const refreshTimer = window.setInterval(() => {
       gatewayApi.snapshot().then(setNodes).catch(() => undefined)
+      gatewayApi.diagnostics().then(setQueues).catch(() => undefined)
     }, 8000)
 
     return () => {
@@ -51,7 +66,7 @@ export function useTelemetryStream() {
     }
   }, [])
 
-  return { nodes, alerts, connected, packetRate }
+  return { nodes, alerts, commands, queues, connected, packetRate, setNodes }
 }
 
 function upsert(nodes: SensorLiveDto[], sample: TelemetrySampleDto): SensorLiveDto[] {
