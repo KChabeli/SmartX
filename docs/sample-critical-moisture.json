@@ -1,0 +1,7 @@
+{
+  "deviceId": "AA:7C:3F:10:00:01",
+  "metric": "soil_moisture",
+  "valueKind": "Float",
+  "numericValue": 12.4,
+  "unit": "%"
+}
