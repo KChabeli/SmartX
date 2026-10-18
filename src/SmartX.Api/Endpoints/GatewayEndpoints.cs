@@ -13,7 +13,7 @@ public static class GatewayEndpoints
             new("ingestion", "Sensor Data Ingestion and Telemetry",
                 "Live ESP32 telemetry gateway with colour-coded threshold alerting.", true, null),
             new("commands", "Real-Time Command Stream and History",
-                "Bidirectional actuator command bus and audit trail.", false, "Part 2"),
+                "FIFO / priority ingest lanes, manual overrides, undo stack and automated insights.", true, null),
             new("mesh", "Network Topology and Mesh Routing",
                 "Visual mesh routing, hop health and gateway failover.", false, "Final PoE")
         })).WithTags("Gateway");
@@ -22,7 +22,7 @@ public static class GatewayEndpoints
         sensors.MapGet("/", (GatewayStore store) =>
             Results.Ok(store.Sensors.Values.Select(TelemetryIngestService.ToDto)));
 
-        sensors.MapPost("/", (RegisterSensorRequest request, GatewayStore store) =>
+        sensors.MapPost("/", (RegisterSensorRequest request, GatewayStore store, RealtimeMeshEngine engine) =>
         {
             if (string.IsNullOrWhiteSpace(request.MacAddress))
             {
@@ -45,6 +45,7 @@ public static class GatewayEndpoints
                 DeploymentPath = request.DeploymentPath ?? request.Location
             };
             store.Sensors[profile.MacAddress] = profile;
+            engine.RegisterDevice(profile);
             return Results.Created($"/api/sensors/{profile.MacAddress}", TelemetryIngestService.ToDto(profile));
         });
 

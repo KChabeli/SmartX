@@ -32,6 +32,7 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddSingleton<GatewayStore>();
 builder.Services.AddSingleton<AttachmentStorage>();
+builder.Services.AddSingleton<RealtimeMeshEngine>();
 builder.Services.AddSingleton<TelemetryIngestService>();
 builder.Services.AddHostedService<TelemetrySimulatorHostedService>();
 
@@ -39,7 +40,8 @@ var app = builder.Build();
 
 var store = app.Services.GetRequiredService<GatewayStore>();
 var ingest = app.Services.GetRequiredService<TelemetryIngestService>();
-MeshSeeder.Seed(store, ingest);
+var engine = app.Services.GetRequiredService<RealtimeMeshEngine>();
+MeshSeeder.Seed(store, ingest, engine);
 
 app.UseCors("smartx");
 if (app.Environment.IsDevelopment())
@@ -48,8 +50,14 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapGatewayEndpoints();
+app.MapCommandEndpoints();
 app.MapHub<TelemetryHub>("/hubs/telemetry");
-app.MapGet("/health", () => Results.Ok(new { status = "ok", nodes = store.Sensors.Count }));
+app.MapGet("/health", () => Results.Ok(new
+{
+    status = "ok",
+    nodes = store.Sensors.Count,
+    queues = engine.Diagnostics()
+}));
 
 app.Lifetime.ApplicationStarted.Register(() =>
 {

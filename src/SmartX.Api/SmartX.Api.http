@@ -6,7 +6,10 @@ GET {{Host}}/health
 GET {{Host}}/api/pillars
 
 ###
-GET {{Host}}/api/telemetry/snapshot
+GET {{Host}}/api/realtime/diagnostics
+
+###
+GET {{Host}}/api/realtime/demo-priority
 
 ###
 POST {{Host}}/api/telemetry/ingest
@@ -16,8 +19,34 @@ Content-Type: application/json
   "deviceId": "AA:7C:3F:10:00:01",
   "metric": "soil_moisture",
   "valueKind": "Float",
-  "numericValue": 91.4,
+  "numericValue": 12.4,
   "unit": "%"
+}
+
+###
+GET {{Host}}/api/realtime/insights
+
+###
+POST {{Host}}/api/commands
+Content-Type: application/json
+
+{
+  "targetMac": "AA:7C:3F:10:00:08",
+  "verb": "Energise",
+  "reason": "manual-override"
+}
+
+###
+POST {{Host}}/api/commands/undo
+
+###
+POST {{Host}}/api/realtime/search
+Content-Type: application/json
+
+{
+  "query": "Pump A",
+  "category": null,
+  "severity": "Critical"
 }
 
 ###
