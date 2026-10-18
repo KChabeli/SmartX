@@ -83,3 +83,47 @@ public sealed record DeploymentNodeDto(
     List<DeploymentNodeDto>? Children);
 
 public sealed record DeploymentValidateDto(bool IsSafe, IReadOnlyList<string> Errors, string ResolvedPath, IReadOnlyList<string>? AncestorChain);
+
+public sealed record IssueCommandRequest(string TargetMac, string Verb, string? Reason);
+
+public sealed record CommandDto(
+    Guid CommandId,
+    string TargetMac,
+    string TargetName,
+    string Verb,
+    bool PreviousState,
+    bool NewState,
+    DateTimeOffset IssuedAt,
+    string Reason,
+    bool WasUndone);
+
+public sealed record InsightDto(
+    Guid Id,
+    string Title,
+    string Rationale,
+    double Confidence,
+    string TargetMac,
+    string TargetName,
+    string Verb,
+    string ContextMac,
+    string ContextName,
+    string Context);
+
+public sealed record RealtimeDiagnosticsDto(
+    int StandardQueueDepth,
+    int PriorityQueueDepth,
+    int UndoStackDepth,
+    int DictionarySize,
+    int SortedLogCount,
+    int UniqueFaults,
+    int DisconnectedNodes,
+    int StandardEnqueued,
+    int PriorityEnqueued,
+    int StandardProcessed,
+    int PriorityProcessed,
+    IReadOnlyList<string> ActiveFaults,
+    IReadOnlyList<string> DisconnectedMacs);
+
+public sealed record PriorityBypassDto(string Explanation, IReadOnlyList<string> ProcessingOrder);
+
+public sealed record DeviceSearchRequest(string? Query, string? Category, string? Severity);
