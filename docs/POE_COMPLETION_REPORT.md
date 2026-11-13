@@ -5,6 +5,7 @@
 **Student number:** ST10448834  
 **Campus:** Emeris, Ruimsig  
 **GitHub:** https://github.com/KChabeli/SmartX.git  
+**Video demo:** https://youtu.be/SjVrgx86dpY  
 **Date:** 11 November 2026
 
 This report covers the final Portfolio of Evidence: Network Topology and Mesh Routing, plus how Parts 1 and 2 were closed after marker feedback.
@@ -72,4 +73,4 @@ These stay inside a .NET-centred ecosystem (CI, Azure, MQTT) and do not require 
 
 ## 5. Declaration
 
-I, Khumo-Thato Chabeli (ST10448834), submit this report together with https://github.com/KChabeli/SmartX.git as the complete functioning Smart-X application for PROG7312 Parts 1–3.
+I, Khumo-Thato Chabeli (ST10448834), submit this report together with https://github.com/KChabeli/SmartX.git and the video demonstration at https://youtu.be/SjVrgx86dpY as the complete functioning Smart-X application for PROG7312 Parts 1–3.

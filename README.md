@@ -6,6 +6,8 @@ ASP.NET Core 10 Minimal API + React dashboard for a simulated South African ESP3
 - **Part 2** — real-time processing engine: FIFO/priority queues drained by a **background service**, undo stack, O(1) device dictionary, sorted timeline, unique fault set, live-only insights.
 - **Part 3** — Network Topology and Mesh Routing: AVL historical index, radio graph, BFS healing, Kruskal MST hop backbone.
 
+**Video demo:** https://youtu.be/SjVrgx86dpY
+
 ## Architecture
 
 - `src/SmartX.Domain` — packets, operators, deployment recursion, queues/commands/faults.
@@ -192,5 +194,7 @@ docker compose up --build
 ## GitHub
 
 https://github.com/KChabeli/SmartX
+
+**Video demo:** https://youtu.be/SjVrgx86dpY
 
 Lecturer feedback log: `docs/FEEDBACK_UPDATES.md`. Project completion report: `docs/POE_COMPLETION_REPORT.md`.
