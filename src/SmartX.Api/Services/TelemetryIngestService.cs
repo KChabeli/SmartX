@@ -8,7 +8,7 @@ using SmartX.Domain.Telemetry;
 
 namespace SmartX.Api.Services;
 
-public sealed class TelemetryIngestService(GatewayStore store, IHubContext<TelemetryHub> hub, RealtimeMeshEngine engine)
+public sealed class TelemetryIngestService(GatewayStore store, IHubContext<TelemetryHub> hub, RealtimeMeshEngine engine, MeshTopologyService mesh)
 {
     public TelemetrySampleDto IngestFloat(TelemetryPacket<float> packet)
     {
@@ -46,7 +46,7 @@ public sealed class TelemetryIngestService(GatewayStore store, IHubContext<Telem
             null, packet.Payload, packet.Timestamp, packet.Sequence);
     }
 
-    public TelemetrySampleDto Ingest(TelemetryIngestRequest request)
+    public TelemetryQueuedDto Ingest(TelemetryIngestRequest request)
     {
         if (!engine.TryGetDevice(request.DeviceId, out var live)
             && !store.Sensors.TryGetValue(request.DeviceId, out _))
@@ -55,17 +55,14 @@ public sealed class TelemetryIngestService(GatewayStore store, IHubContext<Telem
         }
 
         var sensor = live?.Profile ?? store.Sensors[request.DeviceId];
-        engine.Enqueue(request, sensor);
-
-        TelemetrySampleDto? last = null;
-        while (engine.TryDequeueNext(out var envelope))
-        {
-            last = CommitEnvelope(envelope);
-        }
-
-        engine.RefreshDisconnects(DateTimeOffset.UtcNow);
-        _ = engine.BroadcastQueuesAsync();
-        return last ?? throw new InvalidOperationException("Telemetry queue drained empty.");
+        var envelope = engine.Enqueue(request, sensor);
+        var stats = engine.Diagnostics();
+        return new TelemetryQueuedDto(
+            sensor.MacAddress,
+            envelope.Lane.ToString(),
+            stats.StandardQueueDepth,
+            stats.PriorityQueueDepth,
+            "Queued for background drain (priority lane first, then FIFO).");
     }
 
     public TelemetrySampleDto CommitEnvelope(QueuedTelemetry envelope)
@@ -155,6 +152,7 @@ public sealed class TelemetryIngestService(GatewayStore store, IHubContext<Telem
         var sample = Project(deviceId, packetId, metric, unit, kind, numeric, boolean, timestamp, sequence, DateTimeOffset.UtcNow);
         store.LatestSeverity[deviceId] = sample.Severity;
         engine.ObserveCommitted(sample);
+        mesh.Index(sample);
         _ = hub.Clients.All.SendAsync("telemetry", sample);
         if (sample.Severity is AlertSeverity.Critical or AlertSeverity.Disconnected)
         {

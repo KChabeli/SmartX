@@ -15,8 +15,6 @@ public static class MeshSeeder
             engine.RegisterDevice(sensor);
         }
 
-        engine.SeedAssociationPriors();
-
         const int windows = 8;
         const int windowSize = 30;
         var start = DateTimeOffset.UtcNow.AddSeconds(-(windows * windowSize * 2));

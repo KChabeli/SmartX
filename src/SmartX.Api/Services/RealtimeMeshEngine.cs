@@ -232,19 +232,6 @@ public sealed class RealtimeMeshEngine(IHubContext<TelemetryHub> hub)
         }
     }
 
-    public void SeedAssociationPriors()
-    {
-        lock (_gate)
-        {
-            Boost("soil_moisture|Critical", "search|Pump A", 14);
-            Boost("soil_moisture|Critical", "command|Energise|AA:7C:3F:10:00:08", 12);
-            Boost("ph|Critical", "command|Energise|AA:7C:3F:10:00:07", 8);
-            Boost("wattage|Critical", "command|DeEnergise|CC:18:90:30:00:24", 11);
-            Boost("tank_level|Critical", "command|DeEnergise|BB:91:44:20:10:06", 7);
-            Boost("temperature|Disconnected", "search|Fogger", 6);
-        }
-    }
-
     public IReadOnlyList<InsightDto> BuildInsights()
     {
         lock (_gate)
@@ -281,18 +268,26 @@ public sealed class RealtimeMeshEngine(IHubContext<TelemetryHub> hub)
                         continue;
                     }
 
-                    var confidence = contextTotal == 0 ? 0 : Math.Round(100.0 * match.Value / contextTotal, 1);
+                    if (match.Value <= 0 || contextTotal <= 0)
+                    {
+                        continue;
+                    }
+
+                    var confidence = Math.Round(100.0 * match.Value / contextTotal, 1);
                     insights.Add(new InsightDto(
                         Guid.NewGuid(),
                         $"{verb} {target.Profile.DisplayName}",
-                        $"Operators historically followed {device.Profile.DisplayName} {device.Severity} with this override ({match.Value} of {contextTotal} events). Context-conditioned association, not a static if-then rule.",
+                        $"Learned live from this session only — no preloaded associations. Operators followed {device.Profile.DisplayName} {device.Severity} with this override in {match.Value} of {contextTotal} recorded events.",
                         confidence,
                         target.Profile.MacAddress,
                         target.Profile.DisplayName,
                         verb.ToString(),
                         device.Profile.MacAddress,
                         device.Profile.DisplayName,
-                        context));
+                        context,
+                        "live-operator",
+                        match.Value,
+                        contextTotal));
                 }
             }
 
@@ -482,9 +477,6 @@ public sealed class RealtimeMeshEngine(IHubContext<TelemetryHub> hub)
             .FirstOrDefault();
         return hot is null ? null : $"{hot.Profile.Metric}|{hot.Severity}";
     }
-
-    private void Boost(string context, string action, int count)
-        => _associations[(context, action)] = _associations.GetValueOrDefault((context, action)) + count;
 
     private static bool IsCritical(SensorProfile sensor, TelemetryValueKind kind, double? numeric, bool? boolean)
     {

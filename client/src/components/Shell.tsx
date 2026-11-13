@@ -5,7 +5,7 @@ const links = [
   { to: '/', label: 'Gateway' },
   { to: '/telemetry', label: 'Telemetry' },
   { to: '/commands', label: 'Command stream' },
-  { to: '/mesh', label: 'Mesh (locked)' },
+  { to: '/mesh', label: 'Mesh routing' },
   { to: '/sensors', label: 'Sensors' },
   { to: '/tools', label: 'Operators & Tree' },
 ]
@@ -21,7 +21,7 @@ export function Shell() {
             <span className="grid h-9 w-9 place-items-center rounded-lg bg-emerald-400/20 text-emerald-300 mono text-xs">SX</span>
             <div>
               <p className="text-sm font-semibold tracking-wide">SMART-X MESH GATEWAY</p>
-              <p className="text-[11px] text-slate-400">Part 2 · Real-time processing &amp; device commands</p>
+              <p className="text-[11px] text-slate-400">Final PoE · ingest, commands and mesh routing</p>
             </div>
           </NavLink>
           <nav className="site-nav">

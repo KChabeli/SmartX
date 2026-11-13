@@ -1,9 +1,10 @@
-# Smart-X IoT Mesh Gateway — Parts 1 & 2
+# Smart-X IoT Mesh Gateway — Final PoE (Parts 1–3)
 
 ASP.NET Core 10 Minimal API + React dashboard for a simulated South African ESP32 mesh (Stellenbosch hydroponics, Sandton estate, Cape Flats microgrid).
 
 - **Part 1** — colour-coded ingest (Threshold Halo Grid, SignalR, `TelemetryPacket<T>`).
-- **Part 2** — real-time processing engine: FIFO/priority queues, undo stack, O(1) device dictionary, sorted timeline, unique fault set, and an association-rule insight engine.
+- **Part 2** — real-time processing engine: FIFO/priority queues drained by a **background service**, undo stack, O(1) device dictionary, sorted timeline, unique fault set, live-only insights.
+- **Part 3** — Network Topology and Mesh Routing: AVL historical index, radio graph, BFS healing, Kruskal MST hop backbone.
 
 ## Architecture
 
@@ -56,10 +57,11 @@ Command overrides require `Authorization: Bearer <token>`. ESP32 ingest stays op
 
 ## What to click
 
-1. **Gateway** — three pillars. Ingestion and Command Stream are active; Mesh is locked for the final PoE.
-2. **Telemetry** — Part 1 halo grid (unchanged).
-3. **Command stream** — FIFO vs priority lanes, search/filter, actuator Energise/De-energise, **Undo last override**, **Automated insights**.
-4. Navigate between Telemetry and Command stream: the stream keeps running (shared React context, one SignalR connection).
+1. **Gateway** — three pillars, all active.
+2. **Telemetry** — Threshold Halo Grid. Category filter is kept if you leave the page.
+3. **Command stream** — FIFO vs priority lanes (depths move because a hosted drain pops priority then FIFO without an HTTP “next” call). Search/filter, Energise/De-energise, **Undo last override**, **Automated insights** (live operator counts only).
+4. **Mesh routing** — click a MAC, cyan hop path is the Kruskal MST route to the gateway, dashed nodes are BFS-partitioned, AVL range query lists that node’s history.
+5. Navigate Telemetry ↔ Commands ↔ Mesh: `GatewayProvider` keeps SignalR, the selected MAC, filters and insights. The API is not restarted.
 
 ## How to test Part 2 data structures
 
@@ -122,11 +124,45 @@ Silence is simulated every ~30s (two nodes stop publishing). Watch **Unique faul
 
 ### Predictive insights
 
-The engine mines a sliding window of operator **searches** and **commands**, conditioned on the current critical metric (not a static “if moisture then pump” rule). Priors are seeded so a Bed A moisture spike immediately suggests **Energise Pump A**. Typing `Pump A` in the search box while that spike is active strengthens the association.
+The engine mines a sliding window of operator **searches** and **commands**, conditioned on the current critical metric. **No seeded priors.** Confidence is `support / contextCount` from this session only. Inject a Bed A moisture spike, search `Pump A`, then Energise — the insight appears afterwards with a live count.
 
 ```powershell
 curl http://localhost:5266/api/realtime/insights
 ```
+
+### Background queue drain
+
+`QueueDrainHostedService` loops independently of HTTP. Ingest only enqueues. The loop always dequeues `PriorityQueue` first, then `Queue<T>`, then commits via SignalR. Watch `priorityProcessed` / `standardProcessed` on `/api/realtime/diagnostics` rise without calling demo-priority.
+
+```powershell
+dotnet test SmartX.slnx
+```
+
+## Part 3 — mesh topology
+
+Login, open **Mesh routing**, select `AA:7C:3F:10:00:01`.
+
+```powershell
+curl.exe "http://localhost:5266/api/mesh/topology?mac=AA:7C:3F:10:00:01"
+curl.exe "http://localhost:5266/api/mesh/history?deviceId=AA:7C:3F:10:00:01"
+```
+
+- **AVL tree** (`AvlTree<TelemetryKey, TelemetrySampleDto>`) stores timestamped samples per MAC. The history table is a range query (`from`/`to`), not a scan of the ingest list. Key is `(timestamp, packetId)` so two packets at the same tick are not overwritten.
+- **Graph** (`MeshGraph`) — vertices = 21 ESP32 nodes + `GW-SMARTX`. Edges = ESP-NOW / Thread / Zigbee radio with a milli-joule cost.
+- **BFS** from the gateway, skipping silent MACs, lists reachable vs partitioned nodes and suggests live neighbours to hop through.
+- **Kruskal MST** is the cheapest set of live radio edges that still spans the mesh. The cyan path is that tree walked from gateway → selected MAC.
+
+### Why these structures (efficiency)
+
+**AVL:** an unbalanced list of 20 000 packets would be O(n) per “14:00–16:00 for Node A”. AVL range walks only the overlapping subtree, O(log n + k). Height is kept ±1 by rotations in `AvlTree.Insert`.
+
+```csharp
+var rows = tree.Range(TelemetryKey.StartOf(from), TelemetryKey.EndOf(to));
+```
+
+**Graph + BFS:** adjacency lists make “who can I hear?” O(V+E). When a node is in the disconnect `HashSet`, BFS simply does not enqueue it, which is how the mesh heals without rewriting the catalogue.
+
+**Kruskal MST:** sort edges by milli-joule, Union-Find to skip cycles. The expensive Stellenbosch↔Sandton long-range links (18–21 mJ) stay out of the backbone unless a facility uplink is down. That is the power-efficient hop story the brief asks for (same idea as Zigbee/Thread/ESP-NOW choosing cheap neighbours).
 
 ## Docker
 
@@ -148,8 +184,13 @@ docker compose up --build
 | `Dictionary<MAC, state>` O(1) | `RealtimeMeshEngine._devices` |
 | `SortedDictionary` timeline | `RealtimeMeshEngine._timeline` |
 | `HashSet` unique faults | `_activeFaults`, `_disconnected` |
+| Background drain | `QueueDrainHostedService` |
+| AVL historical index | `AvlTree` + `MeshTopologyService` |
+| Graph / BFS / Kruskal MST | `MeshGraph` |
 | Generics / operators / recursion | Part 1 domain types (unchanged) |
 
 ## GitHub
 
 https://github.com/KChabeli/SmartX
+
+Lecturer feedback log: `docs/FEEDBACK_UPDATES.md`. Project completion report: `docs/POE_COMPLETION_REPORT.md`.

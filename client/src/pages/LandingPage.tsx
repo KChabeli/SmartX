@@ -17,7 +17,7 @@ export function LandingPage() {
       setPillars([
         { id: 'ingestion', title: 'Sensor Data Ingestion and Telemetry', summary: 'Live ESP32 telemetry gateway.', enabled: true },
         { id: 'commands', title: 'Real-Time Command Stream and History', summary: 'Queues, overrides and insights.', enabled: true },
-        { id: 'mesh', title: 'Network Topology and Mesh Routing', summary: 'Mesh routing visualiser.', enabled: false, deferredUntil: 'Final PoE' },
+        { id: 'mesh', title: 'Network Topology and Mesh Routing', summary: 'Live mesh, MST hops and AVL history.', enabled: true },
       ])
     })
   }, [])
@@ -28,8 +28,8 @@ export function LandingPage() {
         <p className="mono text-xs uppercase tracking-[0.35em] text-emerald-300">South African IoT mesh · ESP32 telemetry</p>
         <h1 className="hero-title mt-3 max-w-3xl">From ingest to override — without losing the mesh.</h1>
         <p className="mt-4 max-w-2xl text-slate-300">
-          Part 2 turns the gateway into a live processing engine: FIFO and priority lanes, O(1) MAC lookups,
-          an undo stack for valve/pump commands, and insights learned from operator search + command sequences.
+          All three pillars are live. Telemetry, command stream and mesh share one SignalR session, so a selected
+          node, filters and insights stay with you when you change page. The mesh draws Kruskal MST hops and heals with BFS.
         </p>
       </section>
 
@@ -39,15 +39,9 @@ export function LandingPage() {
             <p className="mono text-[11px] uppercase tracking-widest text-slate-400">{pillar.enabled ? 'Active' : `Locked · ${pillar.deferredUntil}`}</p>
             <h2 className="mt-2 text-xl font-semibold">{pillar.title}</h2>
             <p className="mt-2 text-sm text-slate-400">{pillar.summary}</p>
-            {pillar.enabled ? (
-              <Link to={hrefFor(pillar.id)} className="mt-5 inline-flex rounded-full bg-emerald-400 px-4 py-2 text-sm font-semibold text-slate-950">
-                Open module
-              </Link>
-            ) : (
-              <Link to="/mesh" className="mt-5 inline-flex rounded-full border border-white/10 px-4 py-2 text-sm text-slate-400">
-                View lock notice
-              </Link>
-            )}
+            <Link to={hrefFor(pillar.id)} className="mt-5 inline-flex rounded-full bg-emerald-400 px-4 py-2 text-sm font-semibold text-slate-950">
+              Open module
+            </Link>
           </article>
         ))}
       </section>

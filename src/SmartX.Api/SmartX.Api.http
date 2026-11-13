@@ -50,6 +50,12 @@ Content-Type: application/json
 }
 
 ###
+GET {{Host}}/api/mesh/topology?mac=AA:7C:3F:10:00:01
+
+###
+GET {{Host}}/api/mesh/history?deviceId=AA:7C:3F:10:00:01
+
+###
 POST {{Host}}/api/meters/aggregate
 Content-Type: application/json
 

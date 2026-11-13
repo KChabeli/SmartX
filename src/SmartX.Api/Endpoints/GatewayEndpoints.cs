@@ -15,7 +15,7 @@ public static class GatewayEndpoints
             new("commands", "Real-Time Command Stream and History",
                 "FIFO / priority ingest lanes, manual overrides, undo stack and automated insights.", true, null),
             new("mesh", "Network Topology and Mesh Routing",
-                "Visual mesh routing, hop health and gateway failover.", false, "Final PoE")
+                "Live ESP-NOW mesh, Kruskal MST hops, BFS healing and AVL range history.", true, null)
         })).WithTags("Gateway");
 
         var sensors = app.MapGroup("/api/sensors").WithTags("Sensors");

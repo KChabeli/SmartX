@@ -107,7 +107,55 @@ public sealed record InsightDto(
     string Verb,
     string ContextMac,
     string ContextName,
-    string Context);
+    string Context,
+    string Source,
+    int SupportCount,
+    int ContextCount);
+
+public sealed record TelemetryQueuedDto(
+    string DeviceId,
+    string Lane,
+    int StandardQueueDepth,
+    int PriorityQueueDepth,
+    string Message);
+
+public sealed record MeshVertexDto(
+    string Id,
+    string Label,
+    string Facility,
+    string Zone,
+    double X,
+    double Y,
+    bool IsGateway,
+    string Severity,
+    bool IsDown,
+    bool ReachableFromGateway,
+    string Metric,
+    string ColourHex);
+
+public sealed record MeshLinkDto(
+    string From,
+    string To,
+    double CostMilliJoule,
+    string Radio,
+    bool OnMst,
+    bool OnSelectedPath);
+
+public sealed record MeshHopDto(string From, string To, double CostMilliJoule);
+
+public sealed record MeshTopologyDto(
+    IReadOnlyList<MeshVertexDto> Vertices,
+    IReadOnlyList<MeshLinkDto> Links,
+    IReadOnlyList<string> HopPath,
+    IReadOnlyList<string> BfsOrder,
+    IReadOnlyList<string> Partitioned,
+    IReadOnlyList<MeshLinkDto> MstEdges,
+    double MstCostMilliJoule,
+    string MstAlgorithm,
+    IReadOnlyList<MeshHopDto> AlternateHops,
+    string HealSummary,
+    int AvlSampleCount,
+    IReadOnlyList<string> DisconnectedMacs);
 
 public sealed record RealtimeDiagnosticsDto(
     int StandardQueueDepth,

@@ -102,6 +102,14 @@ body {
 .tools-grid {
   grid-template-columns: 1fr 1fr;
 }
+.mesh-board {
+  display: grid;
+  grid-template-columns: 1.45fr 0.75fr;
+  gap: 1rem;
+}
+.mesh-canvas {
+  height: auto;
+}
 .login-shell {
   min-height: 100vh;
   display: grid;
@@ -122,7 +130,8 @@ body {
   .halo-board,
   .command-board,
   .sensor-layout,
-  .tools-grid {
+  .tools-grid,
+  .mesh-board {
     grid-template-columns: 1fr;
   }
 }

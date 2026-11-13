@@ -1,16 +1,29 @@
 import { useEffect, useMemo, useState } from 'react'
 import { gatewayApi } from '../lib/api'
 import { useGateway } from '../lib/gatewayContext'
-import type { InsightDto, SensorLiveDto } from '../lib/types'
+import type { SensorLiveDto } from '../lib/types'
 import { formatValue } from '../lib/types'
 
 export function CommandStreamPage() {
-  const { nodes, commands, queues, connected, packetRate, selectedMac, setSelectedMac } = useGateway()
-  const [query, setQuery] = useState('')
-  const [category, setCategory] = useState('all')
-  const [severity, setSeverity] = useState('all')
-  const [insights, setInsights] = useState<InsightDto[]>([])
-  const [message, setMessage] = useState('')
+  const {
+    nodes,
+    commands,
+    queues,
+    connected,
+    packetRate,
+    selectedMac,
+    setSelectedMac,
+    commandQuery: query,
+    setCommandQuery: setQuery,
+    commandCategory: category,
+    setCommandCategory: setCategory,
+    commandSeverity: severity,
+    setCommandSeverity: setSeverity,
+    insights,
+    setInsights,
+    commandMessage: message,
+    setCommandMessage: setMessage,
+  } = useGateway()
   const [demoOrder, setDemoOrder] = useState<string[]>([])
 
   useEffect(() => {
@@ -121,15 +134,21 @@ export function CommandStreamPage() {
         <aside className="space-y-4">
           <section className="rounded-2xl border border-sky-400/30 bg-sky-400/10 p-4">
             <h2 className="text-sm font-semibold uppercase tracking-widest text-sky-200">Automated insights</h2>
-            <p className="mt-1 text-xs text-slate-400">Context-conditioned association: what operators actually did after this metric went critical — not a hard-coded if-then.</p>
+            <p className="mt-1 text-xs text-slate-400">Live operator associations only — no preloaded patterns. Confidence is support ÷ context events from this session.</p>
             <ul className="mt-3 space-y-3">
-              {insights.length === 0 && <li className="text-sm text-slate-500">Waiting for a critical or disconnect context… inject a moisture spike to see Pump A suggested.</li>}
+              {insights.length === 0 && (
+                <li className="text-sm text-slate-500">
+                  Nothing learned yet. Inject a spike, search a pump/valve, then Energise — the next suggestion uses those real counts.
+                </li>
+              )}
               {insights.map((insight) => (
                 <li key={insight.id} className="rounded-xl border border-white/10 bg-slate-950/40 p-3">
                   <p className="font-medium">{insight.title}</p>
                   <p className="mt-1 text-xs text-slate-400">{insight.rationale}</p>
                   <div className="mt-2 flex items-center justify-between gap-2">
-                    <span className="mono text-xs text-sky-300">{insight.confidence}% confidence</span>
+                    <span className="mono text-xs text-sky-300">
+                      {insight.confidence}% · {insight.supportCount ?? 0}/{insight.contextCount ?? 0} live
+                    </span>
                     <button
                       type="button"
                       className="rounded-full bg-sky-400 px-3 py-1 text-xs font-semibold text-slate-950"

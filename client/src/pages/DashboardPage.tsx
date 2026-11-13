@@ -1,12 +1,11 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { HaloCard } from '../components/HaloCard'
 import { LiveChart } from '../components/LiveChart'
 import { gatewayApi } from '../lib/api'
 import { useGateway } from '../lib/gatewayContext'
 
 export function DashboardPage() {
-  const { nodes, alerts, connected, packetRate, selectedMac, setSelectedMac } = useGateway()
-  const [filter, setFilter] = useState('all')
+  const { nodes, alerts, connected, packetRate, selectedMac, setSelectedMac, telemetryFilter: filter, setTelemetryFilter: setFilter } = useGateway()
 
   const visible = useMemo(
     () => nodes.filter((n) => filter === 'all' || n.sensor.category === filter),

@@ -90,6 +90,63 @@ export type InsightDto = {
   contextMac: string
   contextName: string
   context: string
+  source?: string
+  supportCount?: number
+  contextCount?: number
+}
+
+export type MeshVertexDto = {
+  id: string
+  label: string
+  facility: string
+  zone: string
+  x: number
+  y: number
+  isGateway: boolean
+  severity: string
+  isDown: boolean
+  reachableFromGateway: boolean
+  metric: string
+  colourHex: string
+}
+
+export type MeshLinkDto = {
+  from: string
+  to: string
+  costMilliJoule: number
+  radio: string
+  onMst: boolean
+  onSelectedPath: boolean
+}
+
+export type MeshHopDto = {
+  from: string
+  to: string
+  costMilliJoule: number
+}
+
+export type MeshTopologyDto = {
+  vertices: MeshVertexDto[]
+  links: MeshLinkDto[]
+  hopPath: string[]
+  bfsOrder: string[]
+  partitioned: string[]
+  mstEdges: MeshLinkDto[]
+  mstCostMilliJoule: number
+  mstAlgorithm: string
+  alternateHops: MeshHopDto[]
+  healSummary: string
+  avlSampleCount: number
+  disconnectedMacs: string[]
+}
+
+export type MeshHistoryDto = {
+  deviceId: string
+  from: string
+  to: string
+  avlCount: number
+  matched: number
+  samples: TelemetrySampleDto[]
 }
 
 export type RealtimeDiagnosticsDto = {

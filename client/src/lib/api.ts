@@ -104,6 +104,12 @@ export const gatewayApi = {
       },
     ),
   demoPriority: () => json<{ explanation: string; processingOrder: string[] }>('/api/realtime/demo-priority'),
+  meshTopology: (mac?: string | null) =>
+    json<import('./types').MeshTopologyDto>(`/api/mesh/topology${mac ? `?mac=${encodeURIComponent(mac)}` : ''}`),
+  meshHistory: (deviceId: string, from: string, to: string) =>
+    json<import('./types').MeshHistoryDto>(
+      `/api/mesh/history?deviceId=${encodeURIComponent(deviceId)}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
+    ),
 }
 
 export const apiBase = api
